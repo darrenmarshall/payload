@@ -342,7 +342,8 @@ select {
     bottom: 0;
     background: var(--bg-color);
     overflow-y: auto;
-    padding: var(--spacing-md);
+    padding: 0 var(--spacing-md) var(--spacing-md);
+    padding-top: env(safe-area-inset-top, 0);
     z-index: 100;
 }
 

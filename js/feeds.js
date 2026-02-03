@@ -6,7 +6,9 @@
 const PayloadFeeds = {
     // Use Full-Text RSS to convert NPR feeds to full text
     useFullTextFeeds: true,
-    // CORS proxies for RSS feeds and article extraction
+    // Internal serverless proxy endpoint (works on Vercel deploys)
+    apiProxyEndpoint: '/api/proxy?url=',
+    // CORS proxies for RSS feeds and article extraction (fallback for local dev)
     corsProxies: [
         { name: 'corsproxy', url: 'https://corsproxy.io/?url=', format: 'raw' },
         { name: 'allorigins-raw', url: 'https://api.allorigins.win/raw?url=', format: 'raw' },
@@ -53,17 +55,53 @@ const PayloadFeeds = {
     },
 
     /**
+     * Try serverless proxy first (same-origin)
+     */
+    async tryFetchViaApiProxy(targetUrl, validateFn) {
+        if (!this.apiProxyEndpoint) {
+            return { success: false };
+        }
+
+        const proxyUrl = this.apiProxyEndpoint + encodeURIComponent(targetUrl);
+        const res = await this.fetchTextWithTimeout(proxyUrl);
+
+        if (!res.ok) {
+            return { success: false, error: `api proxy: status ${res.status || 'network'}` };
+        }
+
+        if (res.text && (!validateFn || validateFn(res.text))) {
+            return { success: true, text: res.text };
+        }
+
+        return { success: false, error: 'api proxy: invalid response' };
+    },
+
+    /**
      * Fetch text directly or via proxy fallbacks
      */
     async fetchTextWithFallbacks(targetUrl, validateFn = null) {
+        let lastError = null;
+
+        const apiProxyResult = await this.tryFetchViaApiProxy(targetUrl, validateFn);
+        if (apiProxyResult.success) {
+            return apiProxyResult.text;
+        }
+        if (apiProxyResult.error) {
+            lastError = apiProxyResult.error;
+        }
+
         const direct = await this.fetchTextWithTimeout(targetUrl);
         if (direct.ok && (!validateFn || validateFn(direct.text))) {
             return direct.text;
         }
 
-        let lastError = direct.error
-            ? direct.error.message
-            : (direct.ok ? 'direct: invalid response' : `status ${direct.status}`);
+        if (direct.ok) {
+            lastError = 'direct: invalid response';
+        } else if (direct.error) {
+            lastError = `direct: ${direct.error.message}`;
+        } else {
+            lastError = `direct: status ${direct.status}`;
+        }
 
         for (const proxy of this.corsProxies) {
             const proxiedUrl = proxy.url + encodeURIComponent(targetUrl);
@@ -95,7 +133,7 @@ const PayloadFeeds = {
             }
         }
 
-        throw new Error(`Failed to fetch via proxies (${lastError})`);
+        throw new Error(`Failed to fetch via proxies (${lastError || 'unknown error'})`);
     },
 
     /**
@@ -119,7 +157,7 @@ const PayloadFeeds = {
         // Check for parse errors
         const parseError = doc.querySelector('parsererror');
         if (parseError) {
-            const snippet = (xml || '').slice(0, 200).replace(/\s+/g, ' ').trim();
+            const snippet = (xml || '').slice(0, 160).replace(/\s+/g, ' ').trim();
             throw new Error(`Failed to parse RSS feed: ${snippet || 'empty response'}`);
         }
 
