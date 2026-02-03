@@ -341,7 +341,7 @@ const PayloadFeeds = {
         const deleted = await PayloadDB.deleteOldArticles(7);
 
         return {
-            total: mergedArticles.length,
+            total: mergedArticles.length - deleted,
             new: mergedArticles.filter(a => !existingMap.has(a.id)).length,
             deleted,
             errors
