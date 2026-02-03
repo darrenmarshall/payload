@@ -310,6 +310,8 @@ const PayloadFeeds = {
                 articles.forEach(article => {
                     article.feedId = feed.id;
                     article.feedName = feed.name;
+                    // Include feedId in ID so same article in different feeds doesn't overwrite
+                    article.id = this.generateId((article.link || article.title) + '-' + feed.id);
                 });
                 allArticles.push(...articles);
             } catch (e) {
@@ -340,8 +342,9 @@ const PayloadFeeds = {
         // Clean up old articles (older than 7 days)
         const deleted = await PayloadDB.deleteOldArticles(7);
 
+        const counts = await PayloadDB.getArticleCounts();
         return {
-            total: mergedArticles.length - deleted,
+            total: counts.total,
             new: mergedArticles.filter(a => !existingMap.has(a.id)).length,
             deleted,
             errors
