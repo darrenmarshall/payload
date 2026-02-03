@@ -66,6 +66,8 @@ const PayloadUI = {
             saveSettings: document.getElementById('save-settings'),
             closeSettings: document.getElementById('close-settings'),
             clearCacheBtn: document.getElementById('clear-cache-btn'),
+            textOnlyCb: document.getElementById('text-only-cb'),
+            darkModeCb: document.getElementById('dark-mode-cb'),
             timezoneList: document.getElementById('timezone-list'),
 
             // Top bar temp
@@ -113,6 +115,14 @@ const PayloadUI = {
 
         this.elements.clearCacheBtn?.addEventListener('click', () => {
             this.clearCacheAndReload();
+        });
+
+        this.elements.textOnlyCb?.addEventListener('change', (e) => {
+            this.onTextOnlyChange(e.target.checked);
+        });
+
+        this.elements.darkModeCb?.addEventListener('change', (e) => {
+            this.onDarkModeChange(e.target.checked);
         });
 
         // Network status
@@ -493,6 +503,9 @@ const PayloadUI = {
         if (this.elements.weatherApiKey) {
             this.elements.weatherApiKey.value = PayloadWeather.apiKey || '';
         }
+        if (this.elements.darkModeCb) {
+            this.elements.darkModeCb.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+        }
 
         // Render timezone settings
         this.renderTimezoneSettings();
@@ -505,6 +518,38 @@ const PayloadUI = {
      */
     hideSettings() {
         this.elements.settingsModal?.classList.add('hidden');
+    },
+
+    /**
+     * Text-only toggle changed (header)
+     */
+    async onTextOnlyChange(checked) {
+        await PayloadDB.saveSetting('textOnly', !!checked);
+        PayloadFeeds.textOnly = !!checked;
+    },
+
+    /**
+     * Dark mode toggle changed (settings)
+     */
+    async onDarkModeChange(checked) {
+        const theme = checked ? 'dark' : 'light';
+        await PayloadDB.saveSetting('theme', theme);
+        document.documentElement.setAttribute('data-theme', checked ? 'dark' : '');
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = checked ? '#0d0d0d' : '#ffffff';
+    },
+
+    /**
+     * Apply theme and textOnly from storage (call at init)
+     */
+    applyStoredSettings(theme, textOnly) {
+        const isDark = theme === 'dark';
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = isDark ? '#0d0d0d' : '#ffffff';
+        PayloadFeeds.textOnly = !!textOnly;
+        if (this.elements.textOnlyCb) this.elements.textOnlyCb.checked = !!textOnly;
+        if (this.elements.darkModeCb) this.elements.darkModeCb.checked = isDark;
     },
 
     /**

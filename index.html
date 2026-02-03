@@ -19,7 +19,10 @@
                 <span id="status-temp"><span id="top-temp">--</span>°C</span>
             </div>
             <div class="status-right">
-                <span id="signal-status"><span id="signal-indicator">---</span></span>
+                <div class="status-right-row">
+                    <span id="signal-status"><span id="signal-indicator">---</span></span>
+                    <label class="text-only-toggle"><input type="checkbox" id="text-only-cb" title="Text only"> TEXT</label>
+                </div>
                 <span id="sync-status">SYNC: <span id="last-sync">---</span></span>
             </div>
         </header>
@@ -96,6 +99,10 @@
                     <h3>WEATHER LOCATION</h3>
                     <input type="text" id="weather-location" placeholder="City, Country">
                     <input type="text" id="weather-api-key" placeholder="OpenWeatherMap API Key">
+                </div>
+                <div id="theme-settings">
+                    <h3>APPEARANCE</h3>
+                    <label class="setting-toggle"><input type="checkbox" id="dark-mode-cb"> DARK MODE</label>
                 </div>
                 <div id="cache-settings">
                     <h3>REFRESH APP</h3>

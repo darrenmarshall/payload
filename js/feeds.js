@@ -6,6 +6,7 @@
 const PayloadFeeds = {
     // Use Full-Text RSS to convert NPR feeds to full text
     useFullTextFeeds: true,
+    textOnly: false,
     // Internal serverless proxy endpoint (works on Vercel deploys)
     apiProxyEndpoint: '/api/proxy?url=',
     // CORS proxies for RSS feeds and article extraction (fallback for local dev)
@@ -26,7 +27,9 @@ const PayloadFeeds = {
      * Build a full-text feed URL (FiveFilters Full-Text RSS)
      */
     getFullTextFeedUrl(feedUrl) {
-        return `https://ftr.fivefilters.org/makefulltextfeed.php?url=${encodeURIComponent(feedUrl)}`;
+        let url = `https://ftr.fivefilters.org/makefulltextfeed.php?url=${encodeURIComponent(feedUrl)}`;
+        if (this.textOnly) url += '&images=0';
+        return url;
     },
 
     /**
@@ -236,10 +239,11 @@ const PayloadFeeds = {
         if (!articleUrl) return null;
 
         try {
-            const extractUrl =
+            let extractUrl =
                 'https://ftr.fivefilters.org/extract.php?url=' +
                 encodeURIComponent(articleUrl) +
                 '&content=text';
+            if (this.textOnly) extractUrl += '&images=0';
             const raw = await this.fetchTextWithFallbacks(extractUrl);
             let json;
             try {

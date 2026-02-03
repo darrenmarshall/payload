@@ -19,8 +19,13 @@ const PayloadApp = {
             await PayloadDB.init();
             console.log('DATABASE INITIALIZED');
 
+            // Load theme and textOnly before UI paint
+            const theme = await PayloadDB.getSetting('theme');
+            const textOnly = await PayloadDB.getSetting('textOnly');
+
             // Initialize UI
             PayloadUI.init();
+            PayloadUI.applyStoredSettings(theme, textOnly);
             console.log('UI INITIALIZED');
 
             // Initialize clock

@@ -34,6 +34,18 @@
     --spacing-xl: 32px;
 }
 
+[data-theme="dark"] {
+    --bg-color: #0d0d0d;
+    --text-color: #e0e0e0;
+    --text-muted: #999999;
+    --border-color: #404040;
+    --accent-color: #4da6ff;
+    --warning-color: #e69500;
+    --error-color: #ff4444;
+    --success-color: #00aa00;
+    --panel-bg: #1a1a1a;
+}
+
 html {
     font-size: var(--font-size-base);
 }
@@ -78,6 +90,38 @@ body {
     flex-direction: column;
     align-items: flex-end;
     gap: 2px;
+}
+
+.status-right-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.text-only-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.text-only-toggle input {
+    cursor: pointer;
+}
+
+.setting-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: var(--spacing-sm);
+}
+
+.setting-toggle input {
+    cursor: pointer;
 }
 
 #app-name {
@@ -452,6 +496,7 @@ select {
     background: var(--panel-bg);
 }
 
+#theme-settings,
 #cache-settings {
     margin-top: var(--spacing-md);
     padding-top: var(--spacing-md);
