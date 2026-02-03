@@ -7,6 +7,7 @@ const PayloadUI = {
     elements: {},
     currentFilter: 'all',
     currentArticle: null,
+    unavailableMarker: '[FULL ARTICLE UNAVAILABLE - VISIT SOURCE FOR COMPLETE TEXT]',
 
     /**
      * Initialize UI
@@ -64,6 +65,7 @@ const PayloadUI = {
             weatherApiKey: document.getElementById('weather-api-key'),
             saveSettings: document.getElementById('save-settings'),
             closeSettings: document.getElementById('close-settings'),
+            clearCacheBtn: document.getElementById('clear-cache-btn'),
             timezoneList: document.getElementById('timezone-list'),
 
             // Top bar temp
@@ -107,6 +109,10 @@ const PayloadUI = {
 
         this.elements.closeSettings?.addEventListener('click', () => {
             this.hideSettings();
+        });
+
+        this.elements.clearCacheBtn?.addEventListener('click', () => {
+            this.clearCacheAndReload();
         });
 
         // Network status
@@ -328,7 +334,11 @@ const PayloadUI = {
 
         // Show initial content (excerpt) while loading full content
         if (this.elements.detailContent) {
-            const initialContent = article.fullContent || article.content || article.description;
+            let initialContent = article.fullContent || article.content || article.description;
+            if (article.fullContent && initialContent?.includes(this.unavailableMarker)) {
+                initialContent = (article.content || article.description || '').trim();
+                article.fullContent = null;
+            }
             this.elements.detailContent.textContent = initialContent;
 
             // If we don't have full content yet, try to fetch it
@@ -358,23 +368,24 @@ const PayloadUI = {
 
             if (fullContent && this.currentArticle?.id === article.id) {
                 // Update display
-                this.elements.detailContent.textContent = fullContent;
+                const cleaned = fullContent.replace(this.unavailableMarker, '').trim();
+                this.elements.detailContent.textContent = cleaned;
 
                 // Update word count
-                const wordCount = PayloadFeeds.countWords(fullContent);
+                const wordCount = PayloadFeeds.countWords(cleaned);
                 if (this.elements.detailWords) {
                     this.elements.detailWords.textContent = PayloadFeeds.formatWordCount(wordCount);
                 }
 
                 // Save to database for offline access
-                article.fullContent = fullContent;
+                article.fullContent = cleaned;
                 article.wordCount = wordCount;
                 await PayloadDB.saveArticle(article);
             } else if (this.currentArticle?.id === article.id) {
                 // Avoid leaving "loading" state when extraction returns empty
                 this.elements.detailContent.textContent =
                     (article.content || article.description) +
-                    '\n\n[FULL ARTICLE UNAVAILABLE - VISIT SOURCE FOR COMPLETE TEXT]';
+                    '\n\n' + this.unavailableMarker;
             }
         } catch (e) {
             console.error('Failed to fetch full content:', e);
@@ -382,7 +393,7 @@ const PayloadUI = {
             if (this.currentArticle?.id === article.id) {
                 this.elements.detailContent.textContent =
                     (article.content || article.description) +
-                    '\n\n[FULL ARTICLE UNAVAILABLE - VISIT SOURCE FOR COMPLETE TEXT]';
+                    '\n\n' + this.unavailableMarker;
             }
         }
     },
@@ -494,6 +505,32 @@ const PayloadUI = {
      */
     hideSettings() {
         this.elements.settingsModal?.classList.add('hidden');
+    },
+
+    /**
+     * Clear service worker cache and reload (mobile-friendly "hard refresh")
+     */
+    async clearCacheAndReload() {
+        const btn = this.elements.clearCacheBtn;
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'CLEARING...';
+        }
+        try {
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for (const reg of regs) {
+                    await reg.unregister();
+                }
+            }
+            if ('caches' in window) {
+                const names = await caches.keys();
+                await Promise.all(names.map((name) => caches.delete(name)));
+            }
+        } catch (e) {
+            console.warn('Clear cache:', e);
+        }
+        window.location.reload();
     },
 
     /**

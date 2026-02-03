@@ -14,10 +14,14 @@
     <div id="app">
         <!-- Status Bar -->
         <header id="status-bar">
-            <span id="app-name">ATLAS v.0.1</span>
-            <span id="status-temp"><span id="top-temp">--</span>°C</span>
-            <span id="signal-status"><span id="signal-indicator">---</span></span>
-            <span id="sync-status">SYNC: <span id="last-sync">---</span></span>
+            <div class="status-left">
+                <span id="app-name">ATLAS v.0.1</span>
+                <span id="status-temp"><span id="top-temp">--</span>°C</span>
+            </div>
+            <div class="status-right">
+                <span id="signal-status"><span id="signal-indicator">---</span></span>
+                <span id="sync-status">SYNC: <span id="last-sync">---</span></span>
+            </div>
         </header>
 
         <!-- Mission Control Dashboard -->
@@ -92,6 +96,11 @@
                     <h3>WEATHER LOCATION</h3>
                     <input type="text" id="weather-location" placeholder="City, Country">
                     <input type="text" id="weather-api-key" placeholder="OpenWeatherMap API Key">
+                </div>
+                <div id="cache-settings">
+                    <h3>REFRESH APP</h3>
+                    <p class="settings-hint">If the app feels stuck or shows old content, clear cache and reload.</p>
+                    <button id="clear-cache-btn" class="btn btn-secondary">CLEAR CACHE & RELOAD</button>
                 </div>
                 <button id="save-settings" class="btn">SAVE</button>
                 <button id="close-settings" class="btn">CLOSE</button>
