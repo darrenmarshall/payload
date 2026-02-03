@@ -98,17 +98,19 @@ body {
     gap: var(--spacing-sm);
 }
 
-.text-only-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    font-size: var(--font-size-sm);
+.icon-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: var(--font-size-lg);
     cursor: pointer;
-    user-select: none;
+    padding: var(--spacing-xs);
+    line-height: 1;
+    opacity: 0.8;
 }
 
-.text-only-toggle input {
-    cursor: pointer;
+.icon-btn:hover {
+    opacity: 1;
 }
 
 .setting-toggle {

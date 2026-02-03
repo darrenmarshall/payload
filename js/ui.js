@@ -66,6 +66,7 @@ const PayloadUI = {
             saveSettings: document.getElementById('save-settings'),
             closeSettings: document.getElementById('close-settings'),
             clearCacheBtn: document.getElementById('clear-cache-btn'),
+            settingsBtn: document.getElementById('settings-btn'),
             textOnlyCb: document.getElementById('text-only-cb'),
             darkModeCb: document.getElementById('dark-mode-cb'),
             timezoneList: document.getElementById('timezone-list'),
@@ -115,6 +116,10 @@ const PayloadUI = {
 
         this.elements.clearCacheBtn?.addEventListener('click', () => {
             this.clearCacheAndReload();
+        });
+
+        this.elements.settingsBtn?.addEventListener('click', () => {
+            this.showSettings();
         });
 
         this.elements.textOnlyCb?.addEventListener('change', (e) => {
@@ -505,6 +510,9 @@ const PayloadUI = {
         }
         if (this.elements.darkModeCb) {
             this.elements.darkModeCb.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+        }
+        if (this.elements.textOnlyCb) {
+            this.elements.textOnlyCb.checked = PayloadFeeds.textOnly;
         }
 
         // Render timezone settings
